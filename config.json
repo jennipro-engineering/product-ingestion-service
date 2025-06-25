@@ -1,0 +1,40 @@
+{
+    "validate_keys":["gtin","upc","price","location","lat","lng","latitude","longitude","location_zipcode","zipcode","address"],
+    "validate_keys_category":{
+        "gtin":["gtin","upc"],
+        "price":["price"],
+        "location":["location","lat","lng","latitude","longitude","location_zipcode","zipcode","address"]
+    },
+    "validate_values_grouping": {
+        "gtin": ["gtin","upc"],
+        "price": ["price"],
+        "location":{
+            "1":["lat","lng"],
+            "2":["latitude","longitude"]
+        }
+
+    },
+    "error_messages":{
+        "invalid_gtin": "Invalid GTIN",
+        "invalid_price": "Invalid price",
+        "invalid_location": "Invalid location",
+        "missing_gtin":"Missing GTIN",
+        "missing_price":"Missing price",
+        "missing_location":"Missing location"
+    },
+    "use_config_validation": true,
+    "validation_rules": {
+        "gtin": {
+            "pattern": "^[0-9]{8,14}$",
+            "required": true
+        },
+        "price": {
+            "min_value": 0,
+            "required": true
+        },
+        "location": {
+            "required": true,
+            "allowed_formats": ["latlong", "zipcode", "address"]
+        }
+    }
+}

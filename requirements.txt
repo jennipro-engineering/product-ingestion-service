@@ -12,4 +12,6 @@ motor
 google-cloud-pubsub
 jose
 python-jose
+google-cloud-storage
+
 
