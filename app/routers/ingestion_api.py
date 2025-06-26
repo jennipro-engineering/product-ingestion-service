@@ -55,19 +55,22 @@ async def validate_product_data(product):
         if variant_gtin is None:
             invalid_product_ids_variant_gtin_missing.append(product)
             variant_invalid = True
+            continue
         if not variant_price:
             invalid_product_ids_variant_price_missing.append(product)
             variant_invalid = True
-
+            continue    
         variant_gtin_validation = await validate_gtin(variant_gtin)
         variant_price_validation = validate_price(variant_price)
 
         if not variant_gtin_validation.get("valid", False):
             invalid_product_ids_variant_gtin_invalid.append(product)
             variant_invalid = True
+            continue
         if not variant_price_validation.get("valid", False):
             invalid_product_ids_variant_price_invalid.append(product)
             variant_invalid = True
+            continue
         
     if variant_invalid:
         return False, invalid_product_ids_variant_gtin_missing, invalid_product_ids_variant_price_missing, invalid_product_ids_variant_gtin_invalid, invalid_product_ids_variant_price_invalid
@@ -357,16 +360,30 @@ async def ingestion_api(
         error_data_list = list(product_errors_dict.values())
         gcs_uri_res = gcs_service.upload_json(error_data_list, prefix="errors")
         end_time = time.time()
-        return {
-            "valid_count": len(ingestion_payload.payload),
-            "invalid_count": len(error_data_list),
-            "tracking_id": gcs_uri_res.get("filename"),
-            "status_uri": gcs_uri_res.get("uri")
-        }
+        print("error_data_list",error_data_list)
+        if len(ingestion_payload.payload) > 0 and len(error_data_list) >0:
+            return {
+                "success": True,
+                "valid_count": len(ingestion_payload.payload),
+                "invalid_count": len(error_data_list),
+                "tracking_id": gcs_uri_res.get("filename"),
+                "status_uri": gcs_uri_res.get("uri"),
+                "message":f"Successfully processed {len(ingestion_payload.payload)} records. {len(error_data_list)} records had validation issues."
+            }
+        else:
+            raise HTTPException(status_code=400, detail={
+                "success": "False",
+                "valid_count": len(ingestion_payload.payload),
+                "invalid_count": len(error_data_list),
+                "tracking_id": gcs_uri_res.get("filename"),
+                "status_uri": gcs_uri_res.get("uri"),
+                "error": "Payload contains no valid products."
+            })
+            
     else:
         end_time = time.time()
         return {
+            "success": True,
             "valid_count": len(ingestion_payload.payload),
-            "invalid_count": 0,
-            "message": response_message
+            "message": "Payload processed successfully."
         }
