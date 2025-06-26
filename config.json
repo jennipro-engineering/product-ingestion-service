@@ -22,19 +22,5 @@
         "missing_price":"Missing price",
         "missing_location":"Missing location"
     },
-    "use_config_validation": true,
-    "validation_rules": {
-        "gtin": {
-            "pattern": "^[0-9]{8,14}$",
-            "required": true
-        },
-        "price": {
-            "min_value": 0,
-            "required": true
-        },
-        "location": {
-            "required": true,
-            "allowed_formats": ["latlong", "zipcode", "address"]
-        }
-    }
+    "use_config_validation": true
 }

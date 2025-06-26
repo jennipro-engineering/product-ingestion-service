@@ -17,7 +17,6 @@ import motor.motor_asyncio
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.models.ingestion_model import IngestionPayload
 from app.config.database import get_database
-from app.services.pub_sub_service import send_to_pubsub
 from app.services.gcs_service import GCSService
 import time
 
@@ -319,6 +318,7 @@ async def ingestion_api(
     # Send data to pubsub
     try:
         send_to_pubsub(ingestion_payload)
+        print('send to pubsub')
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 

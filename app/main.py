@@ -56,9 +56,17 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "message": exc.detail
         },
     )
-    
-app.include_router(api_gateway.router, prefix="/api/v1")
-app.include_router(ingestion_api.router, prefix="/api/v1")
+
+@app.get('/health')
+async def health():
+    return JSONResponse(content={"status": "ok"})
+
+@app.get("/api/sku-graph/product-ingestion-service/health")
+async def health():
+    return JSONResponse(content={"status": "ok"})
+
+app.include_router(api_gateway.router, prefix="/api/sku-graph/product-ingestion-service")
+app.include_router(ingestion_api.router, prefix="/api/sku-graph/product-ingestion-service")
 
 
 def custom_openapi():

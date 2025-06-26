@@ -1,24 +1,24 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import Dict
+from typing import Optional
 import json
 import os
 
 class Settings(BaseSettings):
-    mongodb_url: str = "mongodb+srv://jennipro_dev_user:1EfA1u5Am3swHGiW@devcluster.ld0nukp.mongodb.net/?retryWrites=true&ssl=true&w=majority&maxIdleTimeMS=60000"
-    mongodb_name: str = "auth_DB"
-    rate_limit_requests: int = 5
-    rate_limit_period: int = 60
+    mongodb_url: Optional[str] = None
+    mongodb_user: Optional[str] = None
+    mongodb_password: Optional[str] = None
+    mongodb_cluster: Optional[str] = None
+    mongodb_name: str
     gcp_pub_sub_project_id: str = None
     pubsub_topic_id: str = None
-    jwt_secret_key:str="77GGUoxBGBEOVAPhl+/YAaH+yqo1ZcNP78njQbWmWKILp6z3c2nBW9g9O+iysXI8K7H6HoZIm3Iskgo/ICf+6g=="
+    jwt_secret_key:str
     validate_keys: list = []
     validate_keys_category:dict={}
     validate_values_grouping: dict = {}
     error_messages: dict = {}
     use_config_validation: bool = False
-    validation_rules: dict = {}
-    gcs_bucket_name: str = "invalid_ingestion_data"
+    gcs_bucket_name: str
 
     def __init__(self, **values):
         super().__init__(**values)
@@ -31,10 +31,19 @@ class Settings(BaseSettings):
                 self.validate_values_grouping = config_data.get("validate_values_grouping", {})
                 self.error_messages = config_data.get("error_messages", {})
                 self.use_config_validation = config_data.get("use_config_validation", False)
-                self.validation_rules = config_data.get("validation_rules", {})
         except Exception as e:
             # Log or handle error if needed
             pass
+
+        # Build mongodb_url
+        if not self.mongodb_url:
+            if self.mongodb_user and self.mongodb_password and self.mongodb_cluster:
+                self.mongodb_url = (
+                    f"mongodb+srv://{self.mongodb_user}:{self.mongodb_password}@{self.mongodb_cluster}/"
+                    f"?retryWrites=true&w=majority&appName=DevCluster"
+                )
+            else:
+                raise ValueError("MongoDB URL or user/password/cluster must be set in environment variables.")
     
     class Config:
         env_file = ".env"
